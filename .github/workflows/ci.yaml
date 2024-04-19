@@ -38,3 +38,7 @@ jobs:
       - name: Integration test
         run: |
           make integ-test GO=go
+
+      - name: Helm output diff
+        run: |
+          make helm-template-diff

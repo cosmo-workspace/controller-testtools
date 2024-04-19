@@ -52,3 +52,7 @@ install-dev-bin: build
 .PHONY: helm-template-help-snapshot
 helm-template-help-snapshot:
 	cd hack/helm-template-help-snapshot; $(GO) run main.go
+
+.PHONY: helm-template-diff
+helm-template-diff:
+	cd hack/helm-template-diff; $(GO) run main.go
