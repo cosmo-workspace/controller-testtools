@@ -1,3 +1,6 @@
+['Helm test mocks should execute as helm cmd 1']
+SnapShot = ''
+
 ['Helm when Execute should execute with expected args and env 1']
 SnapShot = """
 Arguments for helm: template aaa ccc --namespace=bbb --values=ddd

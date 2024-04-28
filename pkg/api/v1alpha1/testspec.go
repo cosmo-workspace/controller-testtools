@@ -1,17 +1,14 @@
-package charts
+package v1alpha1
 
 import (
 	"encoding/base64"
 	"fmt"
 	"os"
 
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	yaml "sigs.k8s.io/yaml/goyaml.v3"
-
-	unst "github.com/jlandowner/helm-chartsnap/pkg/unstructured"
 )
 
-func LoadSnapshotConfig[T SnapshotValues | SnapshotConfig](filePath string, out *T) error {
+func FromFile[T SnapshotValues | SnapshotConfig](filePath string, out *T) error {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to open file '%s': %w", filePath, err)
@@ -45,29 +42,12 @@ const DynamicValue = "###DYNAMIC_FIELD###"
 
 var Base64DynamicValue = base64.StdEncoding.EncodeToString([]byte(DynamicValue))
 
-func (t *SnapshotConfig) ApplyFixedValue(manifests []metaV1.Unstructured) error {
-	for _, v := range t.DynamicFields {
-		for i, obj := range manifests {
-			if v.APIVersion == obj.GetAPIVersion() &&
-				v.Kind == obj.GetKind() &&
-				v.Name == obj.GetName() {
-				for _, p := range v.JSONPath {
-					var value string
-					if v.Base64 {
-						value = Base64DynamicValue
-					} else {
-						value = DynamicValue
-					}
-					newObj, err := unst.Replace(manifests[i], p, value)
-					if err != nil {
-						return fmt.Errorf("failed to replace json path: %w", err)
-					}
-					manifests[i] = *newObj
-				}
-			}
-		}
+func (v *ManifestPath) DynamicValue() string {
+	if v.Base64 {
+		return Base64DynamicValue
+	} else {
+		return DynamicValue
 	}
-	return nil
 }
 
 // Merge merges the snapshot configs into the current snapshot config

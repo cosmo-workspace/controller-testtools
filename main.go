@@ -13,8 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/jlandowner/helm-chartsnap/pkg/api/v1alpha1"
 	"github.com/jlandowner/helm-chartsnap/pkg/charts"
-	"github.com/jlandowner/helm-chartsnap/pkg/snap"
 )
 
 var (
@@ -38,6 +38,7 @@ type option struct {
 	Parallelism      int
 	ConfigFile       string
 	LegacySnapshot   bool
+	SnapshotVersion  string
 
 	// Below properties are the same as helm global options
 	// They are passed to the plugin as environment variables
@@ -74,6 +75,16 @@ func (o *option) OK() string {
 		return "updated"
 	}
 	return "matched"
+}
+
+// compatibility for --legacy-snapshot flag
+func (o *option) snapshotVersion() string {
+	// use v1 snapshot format if legacy snapshot format is enabled
+	if o.LegacySnapshot {
+		return charts.SnapshotVersionV1
+	} else {
+		return o.SnapshotVersion
+	}
 }
 
 func main() {
@@ -171,6 +182,7 @@ MIT 2023 jlandowner/helm-chartsnap
 		panic(err)
 	}
 	rootCmd.PersistentFlags().BoolVar(&o.LegacySnapshot, "legacy-snapshot", false, "use toml-based legacy snapshot format")
+	rootCmd.PersistentFlags().StringVar(&o.SnapshotVersion, "snapshot-version", "", "use a specific snapshot version. v1, v2, v3 are supported. (default: latest)")
 
 	if err := rootCmd.Execute(); err != nil {
 		slog.New(slogHandler()).Error(err.Error())
@@ -197,8 +209,8 @@ func prerun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func loadSnapshotConfig(file string, cfg *charts.SnapshotConfig) error {
-	err := charts.LoadSnapshotConfig(file, cfg)
+func loadSnapshotConfig(file string, cfg *v1alpha1.SnapshotConfig) error {
+	err := v1alpha1.FromFile(file, cfg)
 	if err != nil && !os.IsNotExist(err) {
 		if o.FailFast {
 			return fmt.Errorf("failed to load snapshot config: %w", err)
@@ -222,7 +234,7 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	var cfg charts.SnapshotConfig
+	var cfg v1alpha1.SnapshotConfig
 	if _, err := os.Stat(o.ConfigFile); err == nil {
 		if err := loadSnapshotConfig(o.ConfigFile, &cfg); err != nil {
 			return err
@@ -305,38 +317,14 @@ func run(cmd *cobra.Command, args []string) error {
 				snapshotFilePath = charts.DefaultSnapshotFilePath(ht.Chart, ht.ValuesFile)
 			}
 
-			_, err := os.Stat(snapshotFilePath)
-			if err == nil {
-				log.Debug("snapshot file already exists", "path", snapshotFilePath)
-			} else if os.IsNotExist(err) {
-				log.Debug("snapshot file does not exist", "path", snapshotFilePath)
-			} else {
-				log.Error("unexpected error in snapshot file stat", "path", snapshotFilePath, "err", err)
-			}
-
-			if o.UpdateSnapshot {
-				// v1 format is multi snapshot format with encoding legacy formatted yaml
-				if snap.IsMultiSnapshots(snapshotFilePath) && !o.LegacySnapshot {
-					log.Info("WARNING: snapshot is updated to a latest format. if you want to keep a legacy format, please run with --legacy-snapshot flag", "path", snapshotFilePath)
-				}
-				err := snap.RemoveFile(snapshotFilePath)
-				if err != nil && !os.IsNotExist(err) {
-					return fmt.Errorf("failed to replace snapshot file: %w", err)
-				}
-			}
-
-			var version string
-			// use v1 snapshot format if legacy snapshot format is enabled
-			if o.LegacySnapshot {
-				version = charts.SnapshotVersionV1
-			}
-
 			snapshotter := charts.ChartSnapshotter{
 				HelmTemplateCmdOptions: ht,
 				SnapshotConfig:         cfg,
 				SnapshotFile:           snapshotFilePath,
-				SnapshotVersion:        version,
+				SnapshotVersion:        o.snapshotVersion(),
 				DiffContextLineN:       o.DiffContextLineN,
+				UpdateSnapshot:         o.UpdateSnapshot,
+				HeaderVersion:          version,
 			}
 			result, err := snapshotter.Snap(ctx)
 			if err != nil {

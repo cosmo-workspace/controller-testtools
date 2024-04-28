@@ -1,79 +1,64 @@
-package unstructured
+package yaml
 
 import (
 	"io"
+	"log/slog"
 	"os"
 	"testing"
 
 	. "github.com/jlandowner/helm-chartsnap/pkg/snap/gomega"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	"github.com/jlandowner/helm-chartsnap/pkg/api/v1alpha1"
 )
 
-func TestUnstructured(t *testing.T) {
+func TestYAML(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Unstructured Suite")
+	RunSpecs(t, "YAML Suite")
 }
 
-var _ = Describe("Diff", func() {
-	Context("DiffContextLineN is 3", func() {
-		It("should return the extracted diff with previous/next 3 lines", func() {
-			expectedSnap := mustReadFile("testdata/expected.snap")
-			actualSnap := mustReadFile("testdata/actual.snap")
+var _ = Describe("Decode & Encode", func() {
+	It("should success", func() {
+		SetLogger(slog.Default())
 
-			d := DiffOptions{
-				ContextLineN: 3,
-			}
-			diff := d.Diff(expectedSnap, actualSnap)
-			Ω(diff).To(MatchSnapShot())
-		})
+		// Decode
+		manifests := load("testdata/input.yaml")
+
+		// Encode again
+		buf, err := Encode(manifests)
+		Expect(err).NotTo(HaveOccurred())
+		Ω(buf).Should(MatchSnapShot())
 	})
 
-	Context("DiffContextLineN is 0", func() {
-		It("should return all diff", func() {
-			expectedSnap := mustReadFile("testdata/expected.snap")
-			actualSnap := mustReadFile("testdata/actual.snap")
+	It("should success with converting invalid YAML format", func() {
+		SetLogger(slog.Default())
 
-			d := DiffOptions{
-				ContextLineN: 0,
-			}
-			diff := d.Diff(expectedSnap, actualSnap)
-			Ω(diff).To(MatchSnapShot())
-		})
+		// Decode
+		manifests := load("testdata/input2.yaml")
+
+		// Encode again
+		buf, err := Encode(manifests)
+		Expect(err).NotTo(HaveOccurred())
+		Ω(buf).Should(MatchSnapShot())
+	})
+
+	It("should success with converting ScalerNode", func() {
+		SetLogger(slog.Default())
+
+		// Decode
+		manifests := load("testdata/input3.yaml")
+
+		// Encode again
+		buf, err := Encode(manifests)
+		Expect(err).NotTo(HaveOccurred())
+		Ω(buf).Should(MatchSnapShot())
 	})
 })
 
-var _ = Describe("Unknown", func() {
-	Context("OK", func() {
-		It("report unknown as warning", func() {
-			raw := `some: raw data
-raw:
-  data: here`
-			err := v1alpha1.NewUnknownError(raw)
-
-			Ω(err.Error()).To(MatchSnapShot())
-		})
-	})
-})
-
-var _ = Describe("ApplyDynamicFields", func() {
-	load := func(filePath string) []metaV1.Unstructured {
-		f, err := os.Open(filePath)
-		Expect(err).NotTo(HaveOccurred())
-		defer f.Close()
-
-		buf, err := io.ReadAll(f)
-		Expect(err).NotTo(HaveOccurred())
-
-		manifests, errs := Decode(string(buf))
-		Expect(len(errs)).To(BeZero())
-
-		return manifests
-	}
-
+var _ = Describe("ApplyFixedValueToDynamicFieleds", func() {
 	It("should replace specified fields", func() {
 		cfg := v1alpha1.SnapshotConfig{
 			DynamicFields: []v1alpha1.ManifestPath{
@@ -136,17 +121,27 @@ var _ = Describe("ApplyDynamicFields", func() {
 				},
 			},
 		}
-		manifests := load("testdata/testspec_test.yaml")
-		err := ApplyFixedValue(cfg, manifests)
+		manifests := load("testdata/input.yaml")
+		err := ApplyFixedValueToDynamicFieleds(cfg, manifests)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(manifests).To(MatchSnapShot())
+
+		// Encode
+		buf, err := Encode(manifests)
+		Expect(err).NotTo(HaveOccurred())
+		Ω(buf).Should(MatchSnapShot())
 	})
 })
 
-func mustReadFile(path string) string {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		panic(err)
-	}
-	return string(data)
+func load(filePath string) []*yaml.RNode {
+	f, err := os.Open(filePath)
+	Expect(err).NotTo(HaveOccurred())
+	defer f.Close()
+
+	buf, err := io.ReadAll(f)
+	Expect(err).NotTo(HaveOccurred())
+
+	manifests, err := Decode(buf)
+	Expect(err).NotTo(HaveOccurred())
+
+	return manifests
 }

@@ -1,157 +1,3 @@
-['ApplyDynamicFields should replace specified fields 1']
-SnapShot = """
-[
-  {
-    \"apiVersion\": \"apps/v1\",
-    \"kind\": \"Deployment\",
-    \"metadata\": {
-      \"labels\": {
-        \"app.kubernetes.io/instance\": \"chartsnap\",
-        \"app.kubernetes.io/managed-by\": \"Helm\",
-        \"app.kubernetes.io/name\": \"app1\",
-        \"app.kubernetes.io/version\": \"###DYNAMIC_FIELD###\",
-        \"helm.sh/chart\": \"app1-0.1.0\"
-      },
-      \"name\": \"chartsnap-app1\"
-    },
-    \"spec\": {
-      \"replicas\": 1,
-      \"selector\": {
-        \"matchLabels\": {
-          \"app.kubernetes.io/instance\": \"chartsnap\",
-          \"app.kubernetes.io/name\": \"app1\"
-        }
-      },
-      \"template\": {
-        \"metadata\": {
-          \"labels\": {
-            \"app.kubernetes.io/instance\": \"chartsnap\",
-            \"app.kubernetes.io/managed-by\": \"Helm\",
-            \"app.kubernetes.io/name\": \"app1\",
-            \"app.kubernetes.io/version\": \"1.16.0\",
-            \"helm.sh/chart\": \"app1-0.1.0\"
-          }
-        },
-        \"spec\": {
-          \"containers\": [
-            {
-              \"image\": \"nginx:1.16.0\",
-              \"imagePullPolicy\": \"IfNotPresent\",
-              \"livenessProbe\": {
-                \"httpGet\": {
-                  \"path\": \"/\",
-                  \"port\": \"http\"
-                }
-              },
-              \"name\": \"app1\",
-              \"ports\": [
-                {
-                  \"containerPort\": 80,
-                  \"name\": \"http\",
-                  \"protocol\": \"TCP\"
-                }
-              ],
-              \"readinessProbe\": {
-                \"httpGet\": {
-                  \"path\": \"/\",
-                  \"port\": \"http\"
-                }
-              },
-              \"resources\": {},
-              \"securityContext\": {}
-            }
-          ],
-          \"securityContext\": {},
-          \"serviceAccountName\": \"IyMjRFlOQU1JQ19GSUVMRCMjIw==\"
-        }
-      }
-    }
-  },
-  {
-    \"apiVersion\": \"v1\",
-    \"kind\": \"Pod\",
-    \"metadata\": {
-      \"annotations\": {
-        \"helm.sh/hook\": \"test\"
-      },
-      \"labels\": {
-        \"app.kubernetes.io/instance\": \"chartsnap\",
-        \"app.kubernetes.io/managed-by\": \"Helm\",
-        \"app.kubernetes.io/name\": \"app1\",
-        \"app.kubernetes.io/version\": \"1.16.0\",
-        \"helm.sh/chart\": \"app1-0.1.0\"
-      },
-      \"name\": \"###DYNAMIC_FIELD###\"
-    },
-    \"spec\": {
-      \"containers\": [
-        {
-          \"args\": [
-            \"chartsnap-app1:80\"
-          ],
-          \"command\": [
-            \"wget\"
-          ],
-          \"image\": \"busybox\",
-          \"name\": \"wget\"
-        }
-      ],
-      \"restartPolicy\": \"Never\"
-    }
-  },
-  {
-    \"apiVersion\": \"v1\",
-    \"kind\": \"Service\",
-    \"metadata\": {
-      \"labels\": {
-        \"app.kubernetes.io/instance\": \"chartsnap\",
-        \"app.kubernetes.io/managed-by\": \"Helm\",
-        \"app.kubernetes.io/name\": \"app1\",
-        \"app.kubernetes.io/version\": \"1.16.0\",
-        \"helm.sh/chart\": \"app1-0.1.0\"
-      },
-      \"name\": \"chartsnap-app1\"
-    },
-    \"spec\": {
-      \"ports\": [
-        {
-          \"name\": \"http\",
-          \"port\": 80,
-          \"protocol\": \"TCP\",
-          \"targetPort\": \"http\"
-        },
-        {
-          \"name\": \"https\",
-          \"port\": 443,
-          \"protocol\": \"TCP\",
-          \"targetPort\": \"###DYNAMIC_FIELD###\"
-        }
-      ],
-      \"selector\": {
-        \"app.kubernetes.io/instance\": \"chartsnap\",
-        \"app.kubernetes.io/name\": \"app1\"
-      },
-      \"type\": \"ClusterIP\"
-    }
-  },
-  {
-    \"apiVersion\": \"v1\",
-    \"automountServiceAccountToken\": true,
-    \"kind\": \"ServiceAccount\",
-    \"metadata\": {
-      \"labels\": {
-        \"app.kubernetes.io/instance\": \"chartsnap\",
-        \"app.kubernetes.io/managed-by\": \"Helm\",
-        \"app.kubernetes.io/name\": \"app1\",
-        \"app.kubernetes.io/version\": \"1.16.0\",
-        \"helm.sh/chart\": \"app1-0.1.0\"
-      },
-      \"name\": \"chartsnap-app1\"
-    }
-  }
-]
-"""
-
 ['Diff DiffContextLineN is 0 should return all diff 1']
 SnapShot = """
 - apiVersion: v2
@@ -331,8 +177,7 @@ SnapShot = """
   kind: ServiceAccount
   metadata:
 
-@@ KIND=Namespace NAME=chartsnap-app1-namespace LINE=12
-- ---
+@@ KIND=Namespace NAME=chartsnap-app1-namespace LINE=13
 - apiVersion: v1
 - kind: Namespace
 - metadata:
@@ -377,7 +222,6 @@ SnapShot = """
   spec:
 
 @@ KIND=Ingress NAME= LINE=108
-+ ---
 + apiVersion: networking.k8s.io/v1
 + kind: Ingress
 +   annotations:
@@ -412,13 +256,5 @@ SnapShot = """
     restartPolicy: Never
 - a
 + 
-"""
 
-['Unknown OK report unknown as warning 1']
-SnapShot = """
-WARN: failed to recognize a resource in stdout/stderr of helm template command output. snapshot it as Unknown: 
----
-some: raw data
-raw:
-  data: here
----"""
+"""

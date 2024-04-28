@@ -13,6 +13,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	yamlUtil "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	yaml "sigs.k8s.io/yaml/goyaml.v3"
+
+	"github.com/jlandowner/helm-chartsnap/pkg/api/v1alpha1"
 )
 
 var logger *slog.Logger
@@ -69,7 +71,7 @@ func Decode(source string) ([]metaV1.Unstructured, []error) {
 		}
 		_, obj, err := StringToUnstructured(v)
 		if err != nil {
-			err := NewUnknownError(v)
+			err := v1alpha1.NewUnknownError(v)
 			obj = err.Unstructured()
 			errs = append(errs, err)
 		}
@@ -77,6 +79,25 @@ func Decode(source string) ([]metaV1.Unstructured, []error) {
 	}
 
 	return resources, errs
+}
+
+func ApplyFixedValue(t v1alpha1.SnapshotConfig, manifests []metaV1.Unstructured) error {
+	for _, v := range t.DynamicFields {
+		for i, obj := range manifests {
+			if v.APIVersion == obj.GetAPIVersion() &&
+				v.Kind == obj.GetKind() &&
+				v.Name == obj.GetName() {
+				for _, p := range v.JSONPath {
+					newObj, err := Replace(manifests[i], p, v.DynamicValue())
+					if err != nil {
+						return fmt.Errorf("failed to replace json path: %w", err)
+					}
+					manifests[i] = *newObj
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func Replace(obj metaV1.Unstructured, key, value string) (*metaV1.Unstructured, error) {

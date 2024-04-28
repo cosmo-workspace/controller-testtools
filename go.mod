@@ -17,12 +17,14 @@ require (
 	golang.org/x/sync v0.7.0
 	k8s.io/apimachinery v0.29.3
 	sigs.k8s.io/controller-runtime v0.17.3
+	sigs.k8s.io/kustomize/kyaml v0.17.0
 	sigs.k8s.io/yaml v1.4.0
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.12.0 // indirect
+	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
@@ -42,9 +44,11 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/xlab/treeprint v1.2.0 // indirect
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/oauth2 v0.19.0 // indirect

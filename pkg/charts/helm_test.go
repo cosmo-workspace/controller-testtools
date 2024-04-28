@@ -71,4 +71,17 @@ var _ = Describe("Helm", func() {
 			Expect(out).To(MatchSnapShot())
 		})
 	})
+
+	Context("test mocks", func() {
+		It("should execute as helm cmd", func() {
+			o := &HelmTemplateCmdOptions{
+				HelmPath:    "./testdata/helm_empty.bash",
+				ReleaseName: "release",
+				Chart:       "chart",
+			}
+			out, err := o.Execute(context.Background())
+			Expect(err).NotTo(HaveOccurred())
+			Expect(out).To(MatchSnapShot())
+		})
+	})
 })

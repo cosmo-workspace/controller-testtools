@@ -1,0 +1,87 @@
+['TestSpec FromFile when loading .chartsnap.yaml should load config 1']
+SnapShot = """
+{
+  \"DynamicFields\": [
+    {
+      \"Kind\": \"Secret\",
+      \"APIVersion\": \"v1\",
+      \"Name\": \"app1-cert\",
+      \"JSONPath\": [
+        \"/data/ca.crt\",
+        \"/data/tls.crt\",
+        \"/data/tls.key\"
+      ],
+      \"Base64\": true
+    }
+  ]
+}
+"""
+
+['TestSpec FromFile when loading invalid yaml should not load config 1']
+SnapShot = """
+failed to decode file 'testdata/testspec_values_invalid.yaml': yaml: line 10: could not find expected ':'"""
+
+['TestSpec FromFile when values.yaml has testSpec should load config 1']
+SnapShot = """
+{
+  \"TestSpec\": {
+    \"DynamicFields\": [
+      {
+        \"Kind\": \"Secret\",
+        \"APIVersion\": \"v1\",
+        \"Name\": \"app1-cert\",
+        \"JSONPath\": [
+          \"/data/ca.crt\",
+          \"/data/tls.crt\",
+          \"/data/tls.key\"
+        ],
+        \"Base64\": true
+      }
+    ]
+  }
+}
+"""
+
+['TestSpec Merge should merge dynamic fields 1']
+SnapShot = """
+{
+  \"DynamicFields\": [
+    {
+      \"Kind\": \"service\",
+      \"APIVersion\": \"v1\",
+      \"Name\": \"chartsnap-app1\",
+      \"JSONPath\": [
+        \"/spec/ports/0/targetPort\"
+      ],
+      \"Base64\": false
+    },
+    {
+      \"Kind\": \"Pod\",
+      \"APIVersion\": \"v1\",
+      \"Name\": \"chartsnap-app1-test-connection\",
+      \"JSONPath\": [
+        \"/metadata/name\"
+      ],
+      \"Base64\": false
+    },
+    {
+      \"Kind\": \"service\",
+      \"APIVersion\": \"v1\",
+      \"Name\": \"chartsnap-app1\",
+      \"JSONPath\": [
+        \"/spec/ports/0/targetPort\"
+      ],
+      \"Base64\": false
+    },
+    {
+      \"Kind\": \"Service\",
+      \"APIVersion\": \"v1\",
+      \"Name\": \"chartsnap-app1\",
+      \"JSONPath\": [
+        \"/spec/ports/1/targetPort\"
+      ],
+      \"Base64\": false
+    }
+  ]
+}
+"""
