@@ -1,6 +1,7 @@
 all: build
 
 GO ?= go1.22.2
+CONTROLLER_TOOLS_VERSION ?= v0.15.0
 
 go:
 	-go install golang.org/dl/$(GO)@latest
@@ -71,3 +72,11 @@ helm-template-diff:
 helm-template-diff.update:
 	-rm hack/helm-template-diff/helm-template.snap
 	make helm-template-diff
+
+.PHONY: controller-gen
+controller-gen:
+	$(GO) install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+
+.PHONY: crd
+crd:
+	controller-gen crd:generateEmbeddedObjectMeta=true paths="github.com/jlandowner/helm-chartsnap/pkg/api/v1alpha1" output:crd:artifacts:config=hack/crd

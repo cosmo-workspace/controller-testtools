@@ -1,10 +1,13 @@
+// +kubebuilder:object:generate=true
+// +groupName=helm-chartsnap.jlandowner.dev
 package v1alpha1
 
 import (
 	"bytes"
 	"fmt"
 
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	yaml "sigs.k8s.io/yaml/goyaml.v3"
 )
@@ -14,20 +17,26 @@ var (
 	GroupVersion = schema.GroupVersion{Group: "helm-chartsnap.jlandowner.dev", Version: "v1alpha1"}
 )
 
-func NewUnknownError(raw string) *UnknownError {
-	return &UnknownError{Raw: raw}
+func NewUnknownError(raw string) *Unknown {
+	return &Unknown{Raw: raw}
 }
 
-type UnknownError struct {
-	Raw string
+// +kubebuilder:object:root=true
+// Unknown is a placeholder for an unrecognized resource in stdout/stderr of helm template command output.
+type Unknown struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Raw is the raw string of the helm output.
+	Raw string `json:"raw,omitempty"`
 }
 
-func (e *UnknownError) Error() string {
+func (e *Unknown) Error() string {
 	return fmt.Sprintf("failed to recognize a resource in stdout/stderr of helm template command output. snapshot it as Unknown: \n---\n%s\n---", e.Raw)
 }
 
-func (e *UnknownError) Unstructured() *metaV1.Unstructured {
-	return &metaV1.Unstructured{
+func (e *Unknown) Unstructured() *unstructured.Unstructured {
+	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": GroupVersion.String(),
 			"kind":       "Unknown",
@@ -36,7 +45,7 @@ func (e *UnknownError) Unstructured() *metaV1.Unstructured {
 	}
 }
 
-func (e *UnknownError) Node() *yaml.Node {
+func (e *Unknown) Node() *yaml.Node {
 	return &yaml.Node{
 		Kind: yaml.MappingNode, Content: []*yaml.Node{
 			{Kind: yaml.ScalarNode, Value: "apiVersion"},
@@ -49,7 +58,7 @@ func (e *UnknownError) Node() *yaml.Node {
 	}
 }
 
-func (e *UnknownError) String() (string, error) {
+func (e *Unknown) String() (string, error) {
 	var buf bytes.Buffer
 	enc := yaml.NewEncoder(&buf)
 	enc.SetIndent(2)
@@ -57,10 +66,10 @@ func (e *UnknownError) String() (string, error) {
 	return buf.String(), err
 }
 
-func (e *UnknownError) MustString() string {
+func (e *Unknown) MustString() string {
 	s, err := e.String()
 	if err != nil {
-		panic(fmt.Sprintf("failed to encode UnknownError to YAML: %v", err))
+		panic(fmt.Sprintf("failed to encode Unknown to YAML: %v", err))
 	}
 	return s
 }
