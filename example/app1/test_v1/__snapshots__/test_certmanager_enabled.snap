@@ -1,0 +1,124 @@
+[test_certmanager_enabled]
+SnapShot = """
+- object:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+        labels:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: app1
+            app.kubernetes.io/version: 1.16.0
+            helm.sh/chart: app1-0.1.0
+        name: chartsnap-app1
+    spec:
+        replicas: 1
+        selector:
+            matchLabels:
+                app.kubernetes.io/instance: chartsnap
+                app.kubernetes.io/name: app1
+        template:
+            metadata:
+                labels:
+                    app.kubernetes.io/instance: chartsnap
+                    app.kubernetes.io/managed-by: Helm
+                    app.kubernetes.io/name: app1
+                    app.kubernetes.io/version: 1.16.0
+                    helm.sh/chart: app1-0.1.0
+            spec:
+                containers:
+                    - image: nginx:1.16.0
+                      imagePullPolicy: IfNotPresent
+                      livenessProbe:
+                        httpGet:
+                            path: /
+                            port: http
+                      name: app1
+                      ports:
+                        - containerPort: 80
+                          name: http
+                          protocol: TCP
+                      readinessProbe:
+                        httpGet:
+                            path: /
+                            port: http
+                      resources: {}
+                      securityContext: {}
+                securityContext: {}
+                serviceAccountName: chartsnap-app1
+- object:
+    apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+        labels:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: app1
+            app.kubernetes.io/version: 1.16.0
+            helm.sh/chart: app1-0.1.0
+        name: app1-cert
+        namespace: default
+    spec:
+        dnsNames:
+            - chartsnap-app1.default.svc
+            - chartsnap-app1.default.svc.cluster.local
+        issuerRef:
+            kind: Issuer
+            name: nameOfClusterIssuer
+        secretName: app1-cert
+- object:
+    apiVersion: v1
+    kind: Pod
+    metadata:
+        annotations:
+            helm.sh/hook: test
+        labels:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: app1
+            app.kubernetes.io/version: 1.16.0
+            helm.sh/chart: app1-0.1.0
+        name: chartsnap-app1-test-connection
+    spec:
+        containers:
+            - args:
+                - chartsnap-app1:80
+              command:
+                - wget
+              image: busybox
+              name: wget
+        restartPolicy: Never
+- object:
+    apiVersion: v1
+    kind: Service
+    metadata:
+        labels:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: app1
+            app.kubernetes.io/version: 1.16.0
+            helm.sh/chart: app1-0.1.0
+        name: chartsnap-app1
+    spec:
+        ports:
+            - name: http
+              port: 80
+              protocol: TCP
+              targetPort: http
+        selector:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/name: app1
+        type: ClusterIP
+- object:
+    apiVersion: v1
+    automountServiceAccountToken: true
+    kind: ServiceAccount
+    metadata:
+        labels:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: app1
+            app.kubernetes.io/version: 1.16.0
+            helm.sh/chart: app1-0.1.0
+        name: chartsnap-app1
+"""

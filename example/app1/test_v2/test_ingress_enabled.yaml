@@ -1,0 +1,25 @@
+testSpec:
+  dynamicFields:
+    - apiVersion: v1
+      kind: Secret
+      name: app1-cert
+      jsonPath:
+        - /data/ca.crt
+        - /data/tls.crt
+        - /data/tls.key
+      base64: true
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: nameOfClusterIssuer
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+   - secretName: chart-example-tls
+     hosts:
+       - chart-example.local

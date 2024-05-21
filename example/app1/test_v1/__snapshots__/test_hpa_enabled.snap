@@ -1,0 +1,145 @@
+[test_hpa_enabled]
+SnapShot = """
+- object:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+        labels:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: app1
+            app.kubernetes.io/version: 1.16.0
+            helm.sh/chart: app1-0.1.0
+        name: chartsnap-app1
+    spec:
+        selector:
+            matchLabels:
+                app.kubernetes.io/instance: chartsnap
+                app.kubernetes.io/name: app1
+        template:
+            metadata:
+                labels:
+                    app.kubernetes.io/instance: chartsnap
+                    app.kubernetes.io/managed-by: Helm
+                    app.kubernetes.io/name: app1
+                    app.kubernetes.io/version: 1.16.0
+                    helm.sh/chart: app1-0.1.0
+            spec:
+                containers:
+                    - image: nginx:1.16.0
+                      imagePullPolicy: IfNotPresent
+                      livenessProbe:
+                        httpGet:
+                            path: /
+                            port: http
+                      name: app1
+                      ports:
+                        - containerPort: 80
+                          name: http
+                          protocol: TCP
+                      readinessProbe:
+                        httpGet:
+                            path: /
+                            port: http
+                      resources: {}
+                      securityContext: {}
+                securityContext: {}
+                serviceAccountName: chartsnap-app1
+- object:
+    apiVersion: autoscaling/v2
+    kind: HorizontalPodAutoscaler
+    metadata:
+        labels:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: app1
+            app.kubernetes.io/version: 1.16.0
+            helm.sh/chart: app1-0.1.0
+        name: chartsnap-app1
+    spec:
+        maxReplicas: 10
+        metrics:
+            - resource:
+                name: cpu
+                target:
+                    averageUtilization: 65
+                    type: Utilization
+              type: Resource
+        minReplicas: 1
+        scaleTargetRef:
+            apiVersion: apps/v1
+            kind: Deployment
+            name: chartsnap-app1
+- object:
+    apiVersion: v1
+    kind: Pod
+    metadata:
+        annotations:
+            helm.sh/hook: test
+        labels:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: app1
+            app.kubernetes.io/version: 1.16.0
+            helm.sh/chart: app1-0.1.0
+        name: chartsnap-app1-test-connection
+    spec:
+        containers:
+            - args:
+                - chartsnap-app1:80
+              command:
+                - wget
+              image: busybox
+              name: wget
+        restartPolicy: Never
+- object:
+    apiVersion: v1
+    data:
+        ca.crt: IyMjRFlOQU1JQ19GSUVMRCMjIw==
+        tls.crt: IyMjRFlOQU1JQ19GSUVMRCMjIw==
+        tls.key: IyMjRFlOQU1JQ19GSUVMRCMjIw==
+    kind: Secret
+    metadata:
+        labels:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: app1
+            app.kubernetes.io/version: 1.16.0
+            helm.sh/chart: app1-0.1.0
+        name: app1-cert
+        namespace: default
+    type: kubernetes.io/tls
+- object:
+    apiVersion: v1
+    kind: Service
+    metadata:
+        labels:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: app1
+            app.kubernetes.io/version: 1.16.0
+            helm.sh/chart: app1-0.1.0
+        name: chartsnap-app1
+    spec:
+        ports:
+            - name: http
+              port: 80
+              protocol: TCP
+              targetPort: http
+        selector:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/name: app1
+        type: ClusterIP
+- object:
+    apiVersion: v1
+    automountServiceAccountToken: true
+    kind: ServiceAccount
+    metadata:
+        labels:
+            app.kubernetes.io/instance: chartsnap
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: app1
+            app.kubernetes.io/version: 1.16.0
+            helm.sh/chart: app1-0.1.0
+        name: chartsnap-app1
+"""

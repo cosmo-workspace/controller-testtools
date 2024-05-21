@@ -6,6 +6,7 @@ testSpec:
       jsonPath:
         - /data/ca.crt
         - /data/ca.key
+      base64: true
     - apiVersion: v1
       kind: Secret
       name: hubble-relay-client-certs
@@ -13,6 +14,7 @@ testSpec:
         - /data/ca.crt
         - /data/tls.crt
         - /data/tls.key
+      base64: true
     - apiVersion: v1
       kind: Secret
       name: hubble-server-certs
@@ -20,6 +22,7 @@ testSpec:
         - /data/ca.crt
         - /data/tls.crt
         - /data/tls.key
+      base64: true
 
 # https://docs.cilium.io/en/stable/installation/k8s-install-helm/
 # EKS
