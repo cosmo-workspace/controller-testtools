@@ -23,7 +23,9 @@ build: goreleaser
 .PHONY: test
 test:
 	$(GO) test -race -coverprofile=coverage.txt -covermode=atomic `go list ./... | grep -v /hack`
+	cat coverage.txt | sort > coverage.txt
 	$(GO) tool cover -func=coverage.txt -o=coverage.out
+	cat coverage.out | sort > coverage.out
 	tail -1 coverage.out | awk '{gsub("%",""); print $$3}'
 
 HELM_PLUGIN_PATH := $(shell helm env | grep HELM_PLUGINS | cut -d= -f2)
@@ -83,3 +85,10 @@ controller-gen:
 .PHONY: crd
 crd:
 	controller-gen crd:generateEmbeddedObjectMeta=true paths="github.com/jlandowner/helm-chartsnap/pkg/api/v1alpha1" output:crd:artifacts:config=hack/crd
+
+kubectl-validate:
+	$(GO) install sigs.k8s.io/kubectl-validate@latest
+
+.PHONY: validate
+validate: kubectl-validate
+	kubectl validate TODO
