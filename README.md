@@ -117,7 +117,7 @@ Just pass your chart for a quick start.
 helm chartsnap -c YOUR_CHART
 ```
 
-`__snapshot__` directory is created in the chart directory and `default.snap` is created.
+`__snapshot__` directory is created in the chart directory and `default.snap.yaml` is created.
 
 Also, you can create test cases as a variation of the Values files of your chart.
 
