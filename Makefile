@@ -81,3 +81,12 @@ controller-gen:
 .PHONY: crd
 crd:
 	controller-gen crd:generateEmbeddedObjectMeta=true paths="github.com/jlandowner/helm-chartsnap/pkg/api/v1alpha1" output:crd:artifacts:config=hack/crd
+
+kubectl-validate:
+	$(GO) install sigs.k8s.io/kubectl-validate@latest
+
+.PHONY: validate
+validate: kubectl-validate
+	kubectl validate example/app1/test_latest/__snapshots__/
+	kubectl validate example/remote/__snapshots__/ && (echo "should fail"; exit 1) || (echo "--- fail is expected ---"; true)
+	kubectl validate example/remote/__snapshots__/ --local-crds hack/crd/ && (echo "should fail"; exit 1) || (echo "--- fail is expected ---"; true)
