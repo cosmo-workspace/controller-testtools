@@ -52,7 +52,7 @@ func Decode(bs []byte) (out []*yaml.RNode, err error) {
 		}
 	}
 
-	err = convertScalerNodeToUnknownNode(out)
+	err = convertToUnknownNode(out)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert scaler node to unknown node: %w", err)
 	}
@@ -102,11 +102,17 @@ func convertInvalidYAMLToUnknown(bs []byte) []byte {
 	return []byte(strings.Join(docs, "\n---\n"))
 }
 
-func convertScalerNodeToUnknownNode(docs []*yaml.RNode) error {
+func convertToUnknownNode(docs []*yaml.RNode) error {
 	for i, v := range docs {
 		if v.IsStringValue() {
 			vv := v.YNode().Value
 			unknown := v1alpha1.NewUnknownError(vv)
+			log().Warn(unknown.Error())
+			docs[i] = yaml.NewRNode(unknown.Node())
+			docs[i].ShouldKeep = true
+		} else if v.GetApiVersion() == "" && v.GetKind() == "" {
+			vv, _ := Encode([]*yaml.RNode{v})
+			unknown := v1alpha1.NewUnknownError(string(vv))
 			log().Warn(unknown.Error())
 			docs[i] = yaml.NewRNode(unknown.Node())
 			docs[i].ShouldKeep = true
