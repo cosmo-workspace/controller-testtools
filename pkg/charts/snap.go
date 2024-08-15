@@ -83,13 +83,27 @@ func (o *ChartSnapshotter) getVersionFromSnapshotFile() string {
 	return v1alpha1.ParseHeader(split[0]).SnapshotVersion
 }
 
-func (o *ChartSnapshotter) Snap(ctx context.Context) (result *SnapshotResult, err error) {
-	if _, err := os.Stat(o.SnapshotFile); err == nil {
-		log().Debug("snapshot file already exists", "path", o.SnapshotFile)
+func checkSnapshotFileExist(path string) (found bool, err error) {
+	if _, err := os.Stat(path); err == nil {
+		log().Debug("snapshot file already exists", "path", path)
+		return true, nil
 	} else if os.IsNotExist(err) {
-		log().Debug("snapshot file does not exist", "path", o.SnapshotFile)
+		log().Debug("snapshot file does not exist", "path", path)
+		return false, nil
 	} else {
-		log().Error("unexpected error in snapshot file stat", "path", o.SnapshotFile, "err", err)
+		log().Error("unexpected error in snapshot file stat", "path", path, "err", err)
+		return false, err
+	}
+}
+
+func (o *ChartSnapshotter) Snap(ctx context.Context) (result *SnapshotResult, err error) {
+	found, _ := checkSnapshotFileExist(o.SnapshotFile)
+	if !found {
+		snapExt := strings.Replace(o.SnapshotFile, ".snap.yaml", ".snap", 1)
+		if found, _ := checkSnapshotFileExist(snapExt); found {
+			// change snapshot file extension to .snap if exists
+			o.SnapshotFile = snapExt
+		}
 	}
 
 	// override snapshot config within values file's test spec
@@ -275,12 +289,14 @@ func DefaultSnapshotFilePath(chartPath, valuesFile string) string {
 
 func SnapshotFileName(valuesFile string) string {
 	if valuesFile != "" {
-		return strings.ReplaceAll(path.Base(valuesFile), ".yaml", "")
+		name := path.Base(valuesFile)
+		name = strings.ReplaceAll(name, ".yaml", "")
+		return name
 	} else {
 		return "default"
 	}
 }
 
 func SnapshotFilePath(dir, valuesFile string) string {
-	return path.Join(dir, "__snapshots__", SnapshotFileName(valuesFile)+".snap")
+	return path.Join(dir, "__snapshots__", SnapshotFileName(valuesFile)+".snap.yaml")
 }

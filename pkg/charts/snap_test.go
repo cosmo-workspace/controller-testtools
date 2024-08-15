@@ -398,7 +398,7 @@ func TestDefaultSnapshotFilePath(t *testing.T) {
 				chartPath:  "/tmp",
 				valuesFile: "chart/test/values.yaml",
 			},
-			want: "chart/test/__snapshots__/values.snap",
+			want: "chart/test/__snapshots__/values.snap.yaml",
 		},
 		{
 			name: "chart directory with no values file and chart is local",
@@ -406,7 +406,7 @@ func TestDefaultSnapshotFilePath(t *testing.T) {
 				chartPath:  "../../example/app1",
 				valuesFile: "",
 			},
-			want: "../../example/app1/__snapshots__/default.snap",
+			want: "../../example/app1/__snapshots__/default.snap.yaml",
 		},
 		{
 			name: "chart directory with no values file and chart is remote",
@@ -414,7 +414,7 @@ func TestDefaultSnapshotFilePath(t *testing.T) {
 				chartPath:  "ingress-nginx/ingress-nginx",
 				valuesFile: "",
 			},
-			want: "__snapshots__/ingress-nginx/__snapshots__/default.snap",
+			want: "__snapshots__/ingress-nginx/__snapshots__/default.snap.yaml",
 		},
 		{
 			name: "chart directory with no values file and chart is in OCI registry",
@@ -422,7 +422,7 @@ func TestDefaultSnapshotFilePath(t *testing.T) {
 				chartPath:  "oci://ghcr.io/nginxinc/charts/nginx-gateway-fabric",
 				valuesFile: "",
 			},
-			want: "__snapshots__/nginx-gateway-fabric/__snapshots__/default.snap",
+			want: "__snapshots__/nginx-gateway-fabric/__snapshots__/default.snap.yaml",
 		},
 	}
 	for _, tt := range tests {
@@ -450,7 +450,7 @@ func TestSnapshotFilePath(t *testing.T) {
 				dir:        "/tmp",
 				valuesFile: "values.yaml",
 			},
-			want: "/tmp/__snapshots__/values.snap",
+			want: "/tmp/__snapshots__/values.snap.yaml",
 		},
 	}
 	for _, tt := range tests {
