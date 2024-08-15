@@ -16,20 +16,16 @@ func main() {
 		helm string
 	}{
 		{
-			snap: "../../example/app1/__snapshots__/default.snap",
+			snap: "../../example/app1/__snapshots__/default.snap.yaml",
 			helm: "helm template chartsnap ../../example/app1 -n default",
 		},
 		{
-			snap: "../../example/app1/test_latest/__snapshots__/test_ingress_enabled.snap",
+			snap: "../../example/app1/test_latest/__snapshots__/test_ingress_enabled.snap.yaml",
 			helm: "helm template chartsnap ../../example/app1 -f ../../example/app1/test_latest/test_ingress_enabled.yaml -n default",
 		},
 		{
-			snap: "../../example/app1/test_latest/__snapshots__/test_hpa_enabled.snap",
+			snap: "../../example/app1/test_latest/__snapshots__/test_hpa_enabled.snap.yaml",
 			helm: "helm template chartsnap ../../example/app1 -f ../../example/app1/test_latest/test_hpa_enabled.yaml -n default",
-		},
-		{
-			snap: "../../example/app1/test_latest/__snapshots__/test_certmanager_enabled.snap",
-			helm: "helm template chartsnap ../../example/app1 -f ../../example/app1/test_latest/test_certmanager_enabled.yaml -n default",
 		},
 		{
 			snap: "../../example/remote/__snapshots__/nginx-gateway-fabric.values.snap",
@@ -38,10 +34,6 @@ func main() {
 		{
 			snap: "../../example/remote/__snapshots__/cilium.values.snap",
 			helm: "helm template chartsnap cilium -f ../../example/remote/cilium.values.yaml -n kube-system --repo https://helm.cilium.io",
-		},
-		{
-			snap: "../../example/remote/__snapshots__/ingress-nginx.values.snap",
-			helm: "helm template chartsnap ingress-nginx -f ../../example/remote/ingress-nginx.values.yaml --repo https://kubernetes.github.io/ingress-nginx -n ingress-nginx --skip-tests",
 		},
 	}
 

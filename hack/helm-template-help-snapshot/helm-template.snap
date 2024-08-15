@@ -82,5 +82,5 @@ Global Flags:
 
 [helm-version]
 SnapShot = """
-version.BuildInfo{Version:\"v3.14.3\", GitCommit:\"f03cc04caaa8f6d7c3e67cf918929150cf6f3f12\", GitTreeState:\"clean\", GoVersion:\"go1.22.1\"}
+version.BuildInfo{Version:\"v3.15.1\", GitCommit:\"e211f2aa62992bd72586b395de50979e31231829\", GitTreeState:\"clean\", GoVersion:\"go1.22.3\"}
 """
